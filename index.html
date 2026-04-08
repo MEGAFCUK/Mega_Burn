@@ -388,19 +388,19 @@
   </div>
 
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('bundleburn')">
-      🔥 bundle_burn.js<br><span style="font-size:10px;font-weight:400;opacity:.6">Token Closer & Consolidator</span>
+    <button class="tab-btn active" onclick="switchTab('megaburn')">
+      🔥 mega_burn.js<br><span style="font-size:10px;font-weight:400;opacity:.6">Token Closer & Consolidator</span>
     </button>
     <button class="tab-btn" onclick="switchTab('sweeper')">
       🌊 sweeper.js<br><span style="font-size:10px;font-weight:400;opacity:.6">SOL Sweeper</span>
     </button>
   </div>
 
-  <!-- ═══════════════════════════════════════════════════════ BUNDLE BURN -->
-  <div id="panel-bundleburn" class="panel active">
+  <!-- ═══════════════════════════════════════════════════════ MEGA BURN -->
+  <div id="panel-megaburn" class="panel active">
 
     <div class="tool-desc">
-      <strong>bundle_burn.js</strong> — Closes all token accounts across multiple wallets, 
+      <strong>mega_burn.js</strong> — Closes all token accounts across multiple wallets, 
       burning low-balance tokens or transferring high-balance ones to your destination wallet, 
       then sweeps remaining SOL. Supports Token Program &amp; Token-2022.
     </div>
@@ -457,8 +457,8 @@
       </div>
     </div>
 
-    <button class="btn-generate" onclick="generateBundleBurn()">
-      <span>⚙</span> Generate bundle_burn.js
+    <button class="btn-generate" onclick="generateMegaBurn()">
+      <span>⚙</span> Generate mega_burn.js
     </button>
 
     <div class="output-area" id="bb-output">
@@ -469,10 +469,10 @@
       <pre id="bb-code"></pre>
       <div class="download-bar visible" id="bb-dl-bar">
         <div class="download-info">
-          bundle_burn.js
+          mega_burn.js
           <span>Ready to run — review before executing on mainnet</span>
         </div>
-        <a id="bb-dl-link" class="btn-download" download="bundle_burn.js">⬇ Download</a>
+        <a id="bb-dl-link" class="btn-download" download="mega_burn.js">⬇ Download</a>
       </div>
     </div>
   </div>
@@ -533,7 +533,7 @@
 </div>
 <script>
 function switchTab(id) {
-  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i === (id==='bundleburn'?0:1)));
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i === (id==='megaburn'?0:1)));
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel-' + id).classList.add('active');
 }
@@ -562,8 +562,8 @@ function makeDownload(linkId, content, filename) {
   a.download = filename;
 }
 
-// ── Generate bundle_burn.js ──────────────────────────────────────────────
-function generateBundleBurn() {
+// ── Generate mega_burn.js ──────────────────────────────────────────────
+function generateMegaBurn() {
   const rpc       = document.getElementById('bb-rpc').value.trim();
   const destAddr  = document.getElementById('bb-dest-addr').value.trim();
   const destKey   = document.getElementById('bb-dest-key').value.trim();
@@ -847,7 +847,7 @@ main().catch(console.error);
   const el = document.getElementById('bb-code');
   el.textContent = code;
   document.getElementById('bb-output').classList.add('visible');
-  makeDownload('bb-dl-link', code, 'bundle_burn.js');
+  makeDownload('bb-dl-link', code, 'mega_burn.js');
   document.getElementById('bb-output').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
