@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Solana Wallet Toolkit</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:        #0a0c10;
+    --surface:   #111318;
+    --border:    #1e2330;
+    --border2:   #252d3d;
+    --accent:    #9945FF;
+    --accent2:   #14F195;
+    --warn:      #f5a623;
+    --danger:    #ff4f4f;
+    --text:      #e8eaf0;
+    --muted:     #606880;
+    --code-bg:   #0d0f14;
+    --radius:    10px;
+    --mono:      'Space Mono', monospace;
+    --sans:      'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── grid noise overlay ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(153,69,255,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(153,69,255,.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* ── header ── */
+  header {
+    margin-bottom: 48px;
+  }
+  .logo-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 8px;
+  }
+  .logo-icon {
+    width: 42px;
+    height: 42px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  h1 {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .tagline {
+    color: var(--muted);
+    font-size: 13px;
+    font-family: var(--mono);
+  }
+
+  /* ── security banner ── */
+  .security-banner {
+    background: rgba(245,166,35,.08);
+    border: 1px solid rgba(245,166,35,.3);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 40px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 13px;
+    color: var(--warn);
+    line-height: 1.5;
+  }
+  .security-banner .icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .security-banner strong { display: block; margin-bottom: 2px; }
+
+  /* ── tabs ── */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 5px;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .18s;
+    letter-spacing: 0.3px;
+  }
+  .tab-btn:hover { color: var(--text); background: var(--border); }
+  .tab-btn.active {
+    background: linear-gradient(135deg, rgba(153,69,255,.2), rgba(20,241,149,.15));
+    color: var(--text);
+    border: 1px solid rgba(153,69,255,.35);
+  }
+
+  /* ── panels ── */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ── section card ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── form elements ── */
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-family: var(--mono);
+    letter-spacing: 0.4px;
+  }
+  label .required { color: var(--danger); margin-left: 3px; }
+  label .hint {
+    font-weight: 400;
+    color: #3d4560;
+    margin-left: 6px;
+    text-transform: none;
+    letter-spacing: 0;
+    font-family: var(--sans);
+    font-size: 11px;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  textarea {
+    width: 100%;
+    background: var(--code-bg);
+    border: 1px solid var(--border2);
+    border-radius: 7px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 10px 13px;
+    outline: none;
+    transition: border-color .15s;
+    resize: vertical;
+  }
+  input[type="text"]:focus,
+  input[type="number"]:focus,
+  textarea:focus {
+    border-color: rgba(153,69,255,.5);
+    box-shadow: 0 0 0 3px rgba(153,69,255,.07);
+  }
+  textarea { min-height: 100px; line-height: 1.7; }
+
+  .field { margin-bottom: 18px; }
+  .field:last-child { margin-bottom: 0; }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 580px) { .row2 { grid-template-columns: 1fr; } }
+
+  /* ── generate button ── */
+  .btn-generate {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, var(--accent), #7a1fff);
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: opacity .15s, transform .1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-generate:hover { opacity: .9; transform: translateY(-1px); }
+  .btn-generate:active { transform: translateY(0); }
+
+  /* ── output ── */
+  .output-area {
+    display: none;
+    margin-top: 24px;
+  }
+  .output-area.visible { display: block; }
+
+  .output-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .output-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent2);
+  }
+  .btn-copy {
+    background: var(--border);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .btn-copy:hover { background: var(--border2); color: var(--text); }
+  .btn-copy.copied { color: var(--accent2); border-color: var(--accent2); }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    line-height: 1.8;
+    color: #c9d1e8;
+    white-space: pre;
+    tab-size: 2;
+  }
+
+  /* syntax highlight colors */
+  .kw  { color: #c792ea; }
+  .str { color: #c3e88d; }
+  .cmt { color: #4a5568; font-style: italic; }
+  .num { color: #f78c6c; }
+  .var { color: var(--accent2); }
+  .fn  { color: #82aaff; }
+
+  /* ── download bar ── */
+  .download-bar {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(20,241,149,.06);
+    border: 1px solid rgba(20,241,149,.2);
+    border-radius: var(--radius);
+    padding: 12px 18px;
+    margin-top: 14px;
+  }
+  .download-bar.visible { display: flex; }
+  .download-info { font-size: 13px; color: var(--accent2); }
+  .download-info span { color: var(--muted); font-size: 12px; display: block; }
+  .btn-download {
+    background: linear-gradient(135deg, var(--accent2), #0db86e);
+    border: none;
+    border-radius: 7px;
+    color: #000;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 18px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity .15s;
+  }
+  .btn-download:hover { opacity: .85; }
+
+  /* ── help text ── */
+  .help-text {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+
+  /* ── inline badge ── */
+  .badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 700;
+  }
+  .badge-purple { background: rgba(153,69,255,.2); color: var(--accent); border: 1px solid rgba(153,69,255,.3); }
+  .badge-green  { background: rgba(20,241,149,.15); color: var(--accent2); border: 1px solid rgba(20,241,149,.25); }
+
+  /* ── tool description strip ── */
+  .tool-desc {
+    background: rgba(153,69,255,.05);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    color: #8090b0;
+    line-height: 1.6;
+  }
+  .tool-desc strong { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="logo-row">
+      <div class="logo-icon">◎</div>
+      <div>
+        <h1>Solana Wallet Toolkit</h1>
+        <div class="tagline">// config generator — local use only</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="security-banner">
+    <span class="icon">⚠</span>
+    <div>
+      <strong>Private Key Security Warning</strong>
+      This tool generates script config files locally in your browser. Your private keys are never sent anywhere. 
+      Only use this page locally — never on a hosted or shared server. 
+      Always test on devnet before running on mainnet.
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('bundleburn')">
+      🔥 bundle_burn.js<br><span style="font-size:10px;font-weight:400;opacity:.6">Token Closer & Consolidator</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('sweeper')">
+      🌊 sweeper.js<br><span style="font-size:10px;font-weight:400;opacity:.6">SOL Sweeper</span>
+    </button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ BUNDLE BURN -->
+  <div id="panel-bundleburn" class="panel active">
+
+    <div class="tool-desc">
+      <strong>bundle_burn.js</strong> — Closes all token accounts across multiple wallets, 
+      burning low-balance tokens or transferring high-balance ones to your destination wallet, 
+      then sweeps remaining SOL. Supports Token Program &amp; Token-2022.
+    </div>
+
+    <div class="card">
+      <div class="card-title">RPC &amp; Network</div>
+      <div class="field">
+        <label>RPC URL <span class="required">*</span></label>
+        <input type="text" id="bb-rpc" placeholder="https://your-rpc-endpoint.com" />
+        <div class="help-text">Use <code style="color:var(--accent2)">https://api.devnet.solana.com</code> for testing.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Destination Wallet</div>
+      <div class="field">
+        <label>Destination Address <span class="required">*</span> <span class="hint">receives tokens &amp; SOL</span></label>
+        <input type="text" id="bb-dest-addr" placeholder="Base58 public key" />
+      </div>
+      <div class="field">
+        <label>Destination Private Key <span class="required">*</span> <span class="hint">used to fund source wallets for fees</span></label>
+        <input type="text" id="bb-dest-key" placeholder="Base58 private key" />
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Source Wallets</div>
+      <div class="field">
+        <label>Private Keys <span class="required">*</span> <span class="hint">one per line, base58 encoded</span></label>
+        <textarea id="bb-keys" placeholder="PRIVATE_KEY_1&#10;PRIVATE_KEY_2&#10;PRIVATE_KEY_3"></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Advanced Settings</div>
+      <div class="row2">
+        <div class="field">
+          <label>Funding Amount (SOL) <span class="hint">per source wallet</span></label>
+          <input type="number" id="bb-fund" value="0.002" step="0.001" min="0" />
+          <div class="help-text">SOL sent from destination to cover fees.</div>
+        </div>
+        <div class="field">
+          <label>Min SOL to Keep <span class="hint">in source after sweep</span></label>
+          <input type="number" id="bb-keep" value="0.001" step="0.001" min="0" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Token Transfer Threshold <span class="hint">tokens — above = transfer, at/below = burn</span></label>
+        <input type="number" id="bb-threshold" value="10000" step="1" min="0" />
+        <div class="help-text">
+          Accounts with <span class="badge badge-green">&gt; threshold</span> tokens → transferred to destination. 
+          Accounts with <span class="badge badge-purple">≤ threshold</span> tokens → burned then closed.
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-generate" onclick="generateBundleBurn()">
+      <span>⚙</span> Generate bundle_burn.js
+    </button>
+
+    <div class="output-area" id="bb-output">
+      <div class="output-header">
+        <span class="output-label">Generated File</span>
+        <button class="btn-copy" id="bb-copy-btn" onclick="copyCode('bb-code', 'bb-copy-btn')">Copy</button>
+      </div>
+      <pre id="bb-code"></pre>
+      <div class="download-bar visible" id="bb-dl-bar">
+        <div class="download-info">
+          bundle_burn.js
+          <span>Ready to run — review before executing on mainnet</span>
+        </div>
+        <a id="bb-dl-link" class="btn-download" download="bundle_burn.js">⬇ Download</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ SWEEPER -->
+  <div id="panel-sweeper" class="panel">
+
+    <div class="tool-desc">
+      <strong>sweeper.js</strong> — Drains all SOL from multiple wallets to a single destination. 
+      Precisely calculates transaction fees so each source wallet ends at exactly 0 SOL.
+    </div>
+
+    <div class="card">
+      <div class="card-title">RPC &amp; Network</div>
+      <div class="field">
+        <label>RPC URL <span class="required">*</span></label>
+        <input type="text" id="sw-rpc" placeholder="https://your-rpc-endpoint.com" />
+        <div class="help-text">Use <code style="color:var(--accent2)">https://api.devnet.solana.com</code> for testing.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Destination</div>
+      <div class="field">
+        <label>Destination Address <span class="required">*</span> <span class="hint">all SOL swept here</span></label>
+        <input type="text" id="sw-dest" placeholder="Base58 public key" />
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Source Wallets</div>
+      <div class="field">
+        <label>Private Keys <span class="required">*</span> <span class="hint">one per line, base58 encoded</span></label>
+        <textarea id="sw-keys" placeholder="PRIVATE_KEY_1&#10;PRIVATE_KEY_2&#10;PRIVATE_KEY_3"></textarea>
+      </div>
+    </div>
+
+    <button class="btn-generate" onclick="generateSweeper()">
+      <span>⚙</span> Generate sweeper.js
+    </button>
+
+    <div class="output-area" id="sw-output">
+      <div class="output-header">
+        <span class="output-label">Generated File</span>
+        <button class="btn-copy" id="sw-copy-btn" onclick="copyCode('sw-code', 'sw-copy-btn')">Copy</button>
+      </div>
+      <pre id="sw-code"></pre>
+      <div class="download-bar visible" id="sw-dl-bar">
+        <div class="download-info">
+          sweeper.js
+          <span>Ready to run — review before executing on mainnet</span>
+        </div>
+        <a id="sw-dl-link" class="btn-download" download="sweeper.js">⬇ Download</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script>
+function switchTab(id) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i === (id==='bundleburn'?0:1)));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+}
+
+function parseKeys(raw) {
+  return raw.split('\n').map(s => s.trim()).filter(Boolean);
+}
+
+function q(s) { return JSON.stringify(s); }
+
+function copyCode(preId, btnId) {
+  const text = document.getElementById(preId).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById(btnId);
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function makeDownload(linkId, content, filename) {
+  const blob = new Blob([content], { type: 'text/javascript' });
+  const url = URL.createObjectURL(blob);
+  const a = document.getElementById(linkId);
+  a.href = url;
+  a.download = filename;
+}
+
+// ── Generate bundle_burn.js ──────────────────────────────────────────────
+function generateBundleBurn() {
+  const rpc       = document.getElementById('bb-rpc').value.trim();
+  const destAddr  = document.getElementById('bb-dest-addr').value.trim();
+  const destKey   = document.getElementById('bb-dest-key').value.trim();
+  const keysRaw   = document.getElementById('bb-keys').value;
+  const fund      = parseFloat(document.getElementById('bb-fund').value) || 0.002;
+  const keep      = parseFloat(document.getElementById('bb-keep').value) || 0.001;
+  const threshold = parseInt(document.getElementById('bb-threshold').value) || 10000;
+
+  if (!rpc || !destAddr || !destKey || !keysRaw.trim()) {
+    alert('Please fill in all required fields (marked with ✱).');
+    return;
+  }
+
+  const keys = parseKeys(keysRaw);
+  if (keys.length === 0) { alert('Add at least one private key.'); return; }
+
+  const keysFormatted = keys.map(k => `  ${q(k)},`).join('\n');
+
+  const code = `/**
+ * Solana Token Account Closer & SOL Consolidator
+ *
+ * Closes token accounts to recover rent and sends remaining SOL
+ * to a destination address.
+ *
+ * Logic per account:
+ *   - balance > MIN_TOKEN_BALANCE_TO_CLOSE  → transfer tokens to destination, then close
+ *   - balance <= MIN_TOKEN_BALANCE_TO_CLOSE → burn tokens (if any), then close
+ *
+ * Requirements:
+ * npm install @solana/web3.js @solana/spl-token bs58
+ */
+
+const {
+  Connection,
+  Keypair,
+  PublicKey,
+  Transaction,
+  sendAndConfirmTransaction,
+  LAMPORTS_PER_SOL,
+  SystemProgram,
+} = require('@solana/web3.js');
+const {
+  closeAccount,
+  TOKEN_PROGRAM_ID,
+  TOKEN_2022_PROGRAM_ID,
+  transfer,
+  getOrCreateAssociatedTokenAccount,
+  burn,
+} = require('@solana/spl-token');
+const bs58 = require('bs58');
+
+// ─── Configuration ────────────────────────────────────────────────────────────
+const SOLANA_RPC_URL          = ${q(rpc)};
+const DESTINATION_ADDRESS     = ${q(destAddr)};
+const DESTINATION_PRIVATE_KEY = ${q(destKey)};
+const FUNDING_AMOUNT          = ${fund};
+const MIN_SOL_TO_KEEP         = ${keep};
+const MIN_TOKEN_BALANCE_TO_CLOSE = ${threshold};
+
+const PRIVATE_KEYS = [
+${keysFormatted}
+];
+// ─────────────────────────────────────────────────────────────────────────────
+
+const PROGRAMS = [
+  { id: TOKEN_PROGRAM_ID,      name: 'Token Program' },
+  { id: TOKEN_2022_PROGRAM_ID, name: 'Token-2022 Program' },
+];
+
+async function fundWallet(connection, funderWallet, targetAddress, amount) {
+  try {
+    const targetBalance    = await connection.getBalance(targetAddress);
+    const targetBalanceSOL = targetBalance / LAMPORTS_PER_SOL;
+    console.log(\`\\n💰 Funding Check:\`);
+    console.log(\`  Target:          \${targetAddress.toBase58()}\`);
+    console.log(\`  Current balance: \${targetBalanceSOL.toFixed(6)} SOL\`);
+    console.log(\`  Needed:          \${amount} SOL\`);
+    if (targetBalanceSOL >= amount) { console.log(\`  ✓ Already funded — skipping\`); return true; }
+    const transaction = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey: funderWallet.publicKey,
+        toPubkey:   targetAddress,
+        lamports:   Math.round(amount * LAMPORTS_PER_SOL),
+      })
+    );
+    const signature = await sendAndConfirmTransaction(connection, transaction, [funderWallet], { commitment: 'confirmed' });
+    console.log(\`  ✓ Funded. Signature: \${signature}\`);
+    await sleep(1000);
+    return true;
+  } catch (error) {
+    console.error(\`  ✗ Funding failed: \${error.message}\`);
+    return false;
+  }
+}
+
+async function closeTokenAccounts(connection, wallet, destinationAddress) {
+  console.log(\`\\nProcessing wallet: \${wallet.publicKey.toBase58()}\`);
+  const destination = new PublicKey(destinationAddress);
+  let totalClosed = 0, totalRent = 0;
+  for (const program of PROGRAMS) {
+    console.log(\`\\n📦 Processing \${program.name}...\`);
+    let accounts;
+    try {
+      accounts = await connection.getParsedTokenAccountsByOwner(wallet.publicKey, { programId: program.id });
+    } catch (err) { console.error(\`  Error fetching accounts: \${err.message}\`); continue; }
+    console.log(\`  Found \${accounts.value.length} account(s)\`);
+    if (accounts.value.length === 0) continue;
+    let closed = 0, rent = 0;
+    for (const { pubkey, account } of accounts.value) {
+      const info      = account.data.parsed.info;
+      const mint      = new PublicKey(info.mint);
+      const uiAmount  = info.tokenAmount.uiAmount  || 0;
+      const rawAmount = BigInt(info.tokenAmount.amount);
+      console.log(\`\\n  Account: \${pubkey.toBase58()}\`);
+      console.log(\`    Mint:    \${mint.toBase58()}\`);
+      console.log(\`    Balance: \${uiAmount} tokens\`);
+      try {
+        if (rawAmount > 0n) {
+          if (uiAmount > MIN_TOKEN_BALANCE_TO_CLOSE) {
+            console.log(\`    → Balance above threshold — transferring to destination...\`);
+            try {
+              const destTokenAccount = await getOrCreateAssociatedTokenAccount(
+                connection, wallet, mint, destination, false, undefined, undefined, program.id
+              );
+              const transferSig = await transfer(
+                connection, wallet, pubkey, destTokenAccount.address, wallet.publicKey,
+                rawAmount, undefined, undefined, program.id
+              );
+              console.log(\`    ✓ Transferred. Signature: \${transferSig}\`);
+              await sleep(1000);
+            } catch (transferError) {
+              console.error(\`    ✗ Transfer failed: \${transferError.message}\`);
+              console.log(\`    → Skipping account\`);
+              continue;
+            }
+          } else {
+            console.log(\`    → Balance at or below threshold — burning \${uiAmount} tokens...\`);
+            try {
+              const burnSig = await burn(
+                connection, wallet, pubkey, mint, wallet.publicKey,
+                rawAmount, undefined, undefined, program.id
+              );
+              console.log(\`    ✓ Burned. Signature: \${burnSig}\`);
+              await sleep(1000);
+            } catch (burnError) {
+              console.error(\`    ✗ Burn failed: \${burnError.message}\`);
+              console.log(\`    → Skipping account\`);
+              continue;
+            }
+          }
+        }
+        console.log(\`    → Closing account to recover rent...\`);
+        const closeSig = await closeAccount(
+          connection, wallet, pubkey, wallet.publicKey, wallet, undefined, undefined, program.id
+        );
+        console.log(\`    ✓ Closed. Signature: \${closeSig}\`);
+        closed++;
+        rent += 0.00203928;
+      } catch (error) {
+        console.error(\`    ✗ Failed to process account: \${error.message}\`);
+      }
+    }
+    if (closed > 0) console.log(\`\\n  📊 \${program.name}: \${closed} closed, ~\${rent.toFixed(6)} SOL recovered\`);
+    totalClosed += closed;
+    totalRent   += rent;
+  }
+  if (totalClosed > 0) console.log(\`\\n📊 Total: \${totalClosed} closed, ~\${totalRent.toFixed(6)} SOL recovered\`);
+  return totalRent;
+}
+
+async function closeVacantAccounts(connection, wallet) {
+  console.log(\`\\n🔍 Scanning for vacant accounts...\`);
+  let totalClosed = 0, totalRent = 0;
+  for (const program of PROGRAMS) {
+    let accounts;
+    try {
+      accounts = await connection.getParsedProgramAccounts(program.id, {
+        filters: [{ dataSize: 165 }, { memcmp: { offset: 32, bytes: wallet.publicKey.toBase58() } }],
+      });
+    } catch (err) { console.error(\`  Error scanning \${program.name}: \${err.message}\`); continue; }
+    let closed = 0, rent = 0;
+    for (const { pubkey } of accounts) {
+      try {
+        const info = await connection.getParsedAccountInfo(pubkey);
+        if (info.value && info.value.data) continue;
+        const sig = await closeAccount(connection, wallet, pubkey, wallet.publicKey, wallet, undefined, undefined, program.id);
+        console.log(\`    ✓ Vacant closed. Signature: \${sig}\`);
+        closed++;
+        rent += 0.00203928;
+      } catch (err) { console.log(\`    → Cannot close: \${err.message}\`); }
+    }
+    totalClosed += closed;
+    totalRent   += rent;
+  }
+  if (totalClosed === 0) console.log(\`  ✓ No vacant accounts found\`);
+  return totalRent;
+}
+
+async function transferRemainingSOL(connection, wallet, destinationAddress) {
+  const balance      = await connection.getBalance(wallet.publicKey);
+  const balanceInSOL = balance / LAMPORTS_PER_SOL;
+  console.log(\`\\n  SOL balance: \${balanceInSOL.toFixed(6)} SOL\`);
+  if (balanceInSOL <= MIN_SOL_TO_KEEP) {
+    console.log(\`  Balance too low to transfer\`);
+    return;
+  }
+  const { blockhash } = await connection.getLatestBlockhash();
+  const testTx = new Transaction({ recentBlockhash: blockhash, feePayer: wallet.publicKey }).add(
+    SystemProgram.transfer({
+      fromPubkey: wallet.publicKey,
+      toPubkey:   new PublicKey(destinationAddress),
+      lamports:   balance - Math.round(MIN_SOL_TO_KEEP * LAMPORTS_PER_SOL),
+    })
+  );
+  const fee          = await connection.getFeeForMessage(testTx.compileMessage(), 'confirmed');
+  const amountToSend = balance - fee.value - Math.round(MIN_SOL_TO_KEEP * LAMPORTS_PER_SOL);
+  if (amountToSend <= 0) { console.log(\`  Not enough SOL to cover fees\`); return; }
+  console.log(\`  Sending \${(amountToSend / LAMPORTS_PER_SOL).toFixed(6)} SOL → \${destinationAddress}\`);
+  const transaction = new Transaction().add(
+    SystemProgram.transfer({ fromPubkey: wallet.publicKey, toPubkey: new PublicKey(destinationAddress), lamports: amountToSend })
+  );
+  const signature = await sendAndConfirmTransaction(connection, transaction, [wallet], { commitment: 'confirmed' });
+  console.log(\`  ✓ SOL transferred. Signature: \${signature}\`);
+}
+
+async function processWallet(connection, privateKey, destinationAddress, funderWallet) {
+  let wallet;
+  try { wallet = Keypair.fromSecretKey(bs58.decode(privateKey)); }
+  catch (err) { console.error(\`\\n✗ Invalid private key — skipping: \${err.message}\`); return; }
+  console.log('\\n' + '='.repeat(80));
+  console.log(\`Wallet: \${wallet.publicKey.toBase58()}\`);
+  console.log('='.repeat(80));
+  if (funderWallet) {
+    const funded = await fundWallet(connection, funderWallet, wallet.publicKey, FUNDING_AMOUNT);
+    if (!funded) console.log('⚠️  Funding failed — continuing anyway');
+  }
+  await closeTokenAccounts(connection, wallet, destinationAddress);
+  await sleep(1000);
+  await closeVacantAccounts(connection, wallet);
+  await sleep(2000);
+  await transferRemainingSOL(connection, wallet, destinationAddress);
+}
+
+function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+async function main() {
+  console.log('Solana Token Account Closer & SOL Consolidator');
+  console.log('='.repeat(80));
+  const connection = new Connection(SOLANA_RPC_URL, 'confirmed');
+  let funderWallet;
+  try {
+    funderWallet = Keypair.fromSecretKey(bs58.decode(DESTINATION_PRIVATE_KEY));
+    if (funderWallet.publicKey.toBase58() !== DESTINATION_ADDRESS) {
+      console.error('❌ DESTINATION_PRIVATE_KEY does not match DESTINATION_ADDRESS');
+      process.exit(1);
+    }
+    const funderBalance    = await connection.getBalance(funderWallet.publicKey);
+    const funderBalanceSOL = funderBalance / LAMPORTS_PER_SOL;
+    const totalNeeded      = FUNDING_AMOUNT * PRIVATE_KEYS.length;
+    console.log(\`\\nFunder: \${funderWallet.publicKey.toBase58()}\`);
+    console.log(\`Balance: \${funderBalanceSOL.toFixed(6)} SOL\`);
+    if (funderBalanceSOL < totalNeeded)
+      console.warn(\`⚠️  May not have enough SOL — need ~\${totalNeeded.toFixed(6)}, have \${funderBalanceSOL.toFixed(6)}\`);
+  } catch (err) { console.error(\`❌ Funder wallet error: \${err.message}\`); process.exit(1); }
+  console.log(\`\\nRPC: \${SOLANA_RPC_URL}\`);
+  console.log(\`Destination: \${DESTINATION_ADDRESS}\`);
+  console.log(\`Wallets: \${PRIVATE_KEYS.length}\`);
+  console.log(\`Token threshold: \${MIN_TOKEN_BALANCE_TO_CLOSE} (above = transfer, at/below = burn)\\n\`);
+  for (const privateKey of PRIVATE_KEYS) {
+    await processWallet(connection, privateKey, DESTINATION_ADDRESS, funderWallet);
+    await sleep(1000);
+  }
+  console.log('\\n' + '='.repeat(80));
+  console.log('✓ All wallets processed');
+  console.log('='.repeat(80));
+}
+
+main().catch(console.error);
+`;
+
+  const el = document.getElementById('bb-code');
+  el.textContent = code;
+  document.getElementById('bb-output').classList.add('visible');
+  makeDownload('bb-dl-link', code, 'bundle_burn.js');
+  document.getElementById('bb-output').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Generate sweeper.js ──────────────────────────────────────────────────────
+function generateSweeper() {
+  const rpc    = document.getElementById('sw-rpc').value.trim();
+  const dest   = document.getElementById('sw-dest').value.trim();
+  const keysRaw = document.getElementById('sw-keys').value;
+
+  if (!rpc || !dest || !keysRaw.trim()) {
+    alert('Please fill in all required fields (marked with ✱).');
+    return;
+  }
+
+  const keys = parseKeys(keysRaw);
+  if (keys.length === 0) { alert('Add at least one private key.'); return; }
+
+  const keysFormatted = keys.map(k => `  ${q(k)},`).join('\n');
+
+  const code = `/**
+ * Solana SOL Sweeper
+ *
+ * Transfers ALL SOL from multiple wallets to a single destination,
+ * leaving 0 SOL in each wallet.
+ *
+ * Requirements:
+ * npm install @solana/web3.js bs58
+ */
+
+const {
+  Connection,
+  Keypair,
+  PublicKey,
+  Transaction,
+  sendAndConfirmTransaction,
+  LAMPORTS_PER_SOL,
+  SystemProgram
+} = require('@solana/web3.js');
+const bs58 = require('bs58');
+
+// Configuration
+const SOLANA_RPC_URL      = ${q(rpc)};
+const DESTINATION_ADDRESS = ${q(dest)};
+
+const PRIVATE_KEYS = [
+${keysFormatted}
+];
+
+async function sweepWallet(connection, wallet, destinationAddress) {
+  console.log(\`\\n\${'='.repeat(80)}\`);
+  console.log(\`Sweeping Wallet: \${wallet.publicKey.toBase58()}\`);
+  console.log('='.repeat(80));
+  try {
+    const balance       = await connection.getBalance(wallet.publicKey);
+    const balanceInSOL  = balance / LAMPORTS_PER_SOL;
+    console.log(\`Current balance: \${balanceInSOL.toFixed(9)} SOL (\${balance} lamports)\`);
+    if (balance === 0) { console.log('⚠️  Wallet is already empty, skipping...'); return 0; }
+    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+    const testTransaction = new Transaction({ recentBlockhash: blockhash, feePayer: wallet.publicKey }).add(
+      SystemProgram.transfer({ fromPubkey: wallet.publicKey, toPubkey: new PublicKey(destinationAddress), lamports: balance })
+    );
+    const feeCalculator = await connection.getFeeForMessage(testTransaction.compileMessage(), 'confirmed');
+    const fee           = feeCalculator.value;
+    console.log(\`Transaction fee: \${(fee / LAMPORTS_PER_SOL).toFixed(9)} SOL (\${fee} lamports)\`);
+    const amountToSend  = balance - fee;
+    if (amountToSend <= 0) {
+      console.log(\`❌ Balance is not enough to cover the transaction fee\`);
+      return 0;
+    }
+    console.log(\`Amount to send: \${(amountToSend / LAMPORTS_PER_SOL).toFixed(9)} SOL\`);
+    console.log(\`\\n→ Sending to \${destinationAddress}...\`);
+    const transaction = new Transaction({ recentBlockhash: blockhash, feePayer: wallet.publicKey }).add(
+      SystemProgram.transfer({ fromPubkey: wallet.publicKey, toPubkey: new PublicKey(destinationAddress), lamports: amountToSend })
+    );
+    const signature = await sendAndConfirmTransaction(connection, transaction, [wallet], {
+      commitment: 'confirmed', preflightCommitment: 'confirmed'
+    });
+    console.log(\`✓ Transfer complete! Signature: \${signature}\`);
+    console.log(\`  Sent: \${(amountToSend / LAMPORTS_PER_SOL).toFixed(9)} SOL\`);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    const newBalance = await connection.getBalance(wallet.publicKey);
+    console.log(\`  Final balance: \${(newBalance / LAMPORTS_PER_SOL).toFixed(9)} SOL\`);
+    if (newBalance === 0) console.log(\`  ✓ Wallet successfully emptied!\`);
+    else console.log(\`  ⚠️  Warning: \${(newBalance / LAMPORTS_PER_SOL).toFixed(9)} SOL remaining\`);
+    return amountToSend;
+  } catch (error) {
+    console.error(\`❌ Error sweeping wallet: \${error.message}\`);
+    return 0;
+  }
+}
+
+async function main() {
+  console.log('Solana SOL Sweeper');
+  console.log('='.repeat(80));
+  console.log('⚠️  WARNING: This script will drain ALL SOL from wallets to 0!');
+  console.log('='.repeat(80));
+  const connection = new Connection(SOLANA_RPC_URL, 'confirmed');
+  console.log(\`\\nRPC Endpoint: \${SOLANA_RPC_URL}\`);
+  console.log(\`Destination: \${DESTINATION_ADDRESS}\`);
+  console.log(\`Wallets to sweep: \${PRIVATE_KEYS.length}\\n\`);
+  let totalSwept = 0, successfulSweeps = 0;
+  const results = [];
+  for (let i = 0; i < PRIVATE_KEYS.length; i++) {
+    const privateKey = PRIVATE_KEYS[i];
+    try {
+      console.log(\`\\nProcessing wallet \${i + 1} of \${PRIVATE_KEYS.length}...\`);
+      const secretKey    = bs58.decode(privateKey);
+      const wallet       = Keypair.fromSecretKey(secretKey);
+      const amountSwept  = await sweepWallet(connection, wallet, DESTINATION_ADDRESS);
+      if (amountSwept > 0) {
+        totalSwept += amountSwept;
+        successfulSweeps++;
+        results.push({ address: wallet.publicKey.toBase58(), amount: amountSwept, success: true });
+      } else {
+        results.push({ address: wallet.publicKey.toBase58(), amount: 0, success: false });
+      }
+      if (i < PRIVATE_KEYS.length - 1) await new Promise(resolve => setTimeout(resolve, 500));
+    } catch (error) {
+      console.error(\`\\n❌ Error processing wallet \${i + 1}: \${error.message}\`);
+      results.push({ address: 'Unknown', amount: 0, success: false, error: error.message });
+    }
+  }
+  console.log('\\n' + '='.repeat(80));
+  console.log('SWEEP SUMMARY');
+  console.log('='.repeat(80));
+  console.log(\`Total wallets processed: \${PRIVATE_KEYS.length}\`);
+  console.log(\`Successful sweeps: \${successfulSweeps}\`);
+  console.log(\`Total SOL swept: \${(totalSwept / LAMPORTS_PER_SOL).toFixed(9)} SOL\`);
+  console.log('='.repeat(80));
+  results.forEach((result, index) => {
+    const status = result.success ? '✓' : '✗';
+    console.log(\`\${status} Wallet \${index + 1}: \${result.address}\`);
+    if (result.success) console.log(\`   Swept: \${(result.amount / LAMPORTS_PER_SOL).toFixed(9)} SOL\`);
+    else if (result.error) console.log(\`   Error: \${result.error}\`);
+  });
+  console.log('\\n✓ Sweep complete!');
+}
+
+main().catch(console.error);
+`;
+
+  const el = document.getElementById('sw-code');
+  el.textContent = code;
+  document.getElementById('sw-output').classList.add('visible');
+  makeDownload('sw-dl-link', code, 'sweeper.js');
+  document.getElementById('sw-output').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+</script>
+</body>
+</html>
