@@ -14,7 +14,7 @@ A pair of Node.js scripts for consolidating SOL and cleaning up token accounts a
 
 ## Tools
 
-### 1. `bundle_burn.js` — Token Account Closer & SOL Consolidator
+### 1. `mega_burn.js` — Token Account Closer & SOL Consolidator
 
 Processes multiple source wallets and for each one:
 
@@ -48,7 +48,7 @@ npm install @solana/web3.js @solana/spl-token bs58
 
 ## Configuration
 
-### `bundle_burn.js`
+### `mega_burn.js`
 
 Open the file and set the following constants at the top:
 
@@ -74,10 +74,10 @@ Open the file and set the following constants at the top:
 
 ## Usage
 
-### bundle_burn.js
+### mega_burn.js
 
 ```bash
-node bundle_burn.js
+node mega_burn.js
 ```
 
 **What it does per wallet:**
@@ -117,7 +117,7 @@ Use the [Solana Faucet](https://faucet.solana.com) to airdrop devnet SOL to test
 ## Project Structure
 
 ```
-├── bundle_burn.js   # Token account closer & SOL consolidator
+├── mega_burn.js   # Token account closer & SOL consolidator
 ├── sweeper.js       # SOL sweeper
 ├── index.html       # Local browser UI for both tools
 └── README.md
